@@ -1,9 +1,30 @@
+from Piloto import Piloto
+from Constructor import Constructor
+
 """Convertir las estructuras de datos en objetos"""
-    
 def carrera_objects(edd):
     carreras = []
     pass
 
+"""id": "alfa",
+    "name": "Alfa Romeo",
+    "nationality": "Swiss"""
+def constructores_objetos(edd,pilotos):
+    pilots, constructores = [] , []
+    for builder in edd:
+        for piloto in pilotos:
+            if piloto.team == builder['id']:
+                pilots.append(piloto.id)
+        x = Constructor(builder['id'],builder['name'],builder['nacionalidad'],pilots)
+
+    
+def pilotos_objetos(edd):
+    pilotos = []
+    for pilot in edd:
+        x = Piloto(pilot['id'], pilot['permanentNumber'],pilot['code'],pilot['team'],pilot['firstName'],pilot['lastName'],pilot['dateOfBirth'],pilot['nationality'])
+        pilotos.append(x)
+    return pilotos
+            
 
 """Seleccionar opcion""" 
 def get_option():
@@ -18,4 +39,24 @@ def get_option():
             print('\nERROR - Por favor ingrese una opcion valida')
     return opt
 
-            
+# def crear_mapa(filas,columnas):
+#     mapa = []
+#     for y in range(filas):
+#         aux = []
+#         for x in range(columnas):
+#             aux.append(False)
+#         mapa.append(aux)
+#     return mapa 
+
+# def imprimir_mapa(mapa):
+#     print('*'*len(mapa(1)) + 'ESTADIO'+'*'*len(mapa(1)))
+#     print('\n')
+#     nums = '    '
+#     for i, x in enumerate(mapa[1]):
+#         if i > 8 :
+#             nums += str(i+1)+'|'
+#         else:
+#             nums += str(i+1)+'|'
+#     print(nums)
+#     for i, x in enumerate(mapa):
+        

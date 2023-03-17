@@ -10,3 +10,6 @@ class Piloto:
         self.dateOfBirth = dateOfBirth
         self.nationality = nationality
 
+    def mostrar(self):
+        print(self.id,self.permanentNumber,self.code,self.team,self.firstName,self.lastName,self.dateOfBirth,self.nationality)
+        

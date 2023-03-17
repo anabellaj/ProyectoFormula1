@@ -1,14 +1,18 @@
 import requests
 from functions import *
-carrera_url = requests.get('https://raw.githubusercontent.com/Algorimtos-y-Programacion-2223-2/api-proyecto/f8e2b420a8f9f5a27463eb29e1df63605822be13/races.json')
+
+carrera_url = requests.get('https://raw.githubusercontent.com/Algorimtos-y-Programacion-2223-2/api-proyecto/main/races.json')
 pilotos_url = requests.get('https://raw.githubusercontent.com/Algorimtos-y-Programacion-2223-2/api-proyecto/main/drivers.json')
 constructores_url = requests.get('https://raw.githubusercontent.com/Algorimtos-y-Programacion-2223-2/api-proyecto/main/constructors.json')
 
 def main():
-    carreras = carrera_url.json()
-    pilotos = pilotos_url.json()
-    constructores = constructores_url.json()
-
+    carreras_edd = carrera_url.json()
+    pilotos_edd = pilotos_url.json()
+    constructores_edd = constructores_url.json()
+    pilotos = pilotos_objetos(pilotos_edd)
+    
+        
+    
     while True:
         opt = get_option()
         
