@@ -24,7 +24,9 @@ def main():
             constructores = constructores_objetos(constructores_edd, pilotos)
             circuitos = circuito_obj(carreras_edd)
             carreras = carrera_objects(carreras_edd, circuitos)
-            
+            restaurantes = restaurantes_obj(carreras_edd)
+            for r in carreras:
+                r.mostrar()
             
             
         #2: Gestion de venta de entradas

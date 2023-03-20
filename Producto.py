@@ -3,3 +3,5 @@ class Producto:
         self.nombre = nombre
         self.precio = precio
         
+    def mostrar(self):
+        pass

@@ -14,7 +14,10 @@ def carrera_objects(edd, circuitos):
     contador = 0
     for carrera in edd:
         circ = circuitos[contador]
-        x = Carrera(carrera['round'],carrera['name'],circ, carrera['date'])
+        rest = []
+        for res in carrera['restaurants']:
+            rest.append(res['name'])
+        x = Carrera(carrera['round'],carrera['name'],circ, carrera['date'], rest)
         carreras.append(x)
         contador+=1
     return carreras
@@ -27,6 +30,28 @@ def circuito_obj(edd):
         circuitos.append(x)
     return circuitos
 
+def restaurantes_obj(edd):
+    restaurantes = []
+    for carrera in edd:
+        for restaur in carrera['restaurants']:
+            items = restaur['items']
+            prod = []
+            for i in items:   
+                # prod = []
+                prod_type = i['type'].split(':')
+                if prod_type[0] == 'drink':
+                    if prod_type[1] == 'alcoholic':
+                        y = Bebida(i['name'], i['price'], True)
+                        prod.append(y)
+                    else:
+                        y = Bebida(i['name'], i['price'], False)
+                        prod.append(y)
+                if prod_type[0] == 'food':
+                    y =Comida(i['name'], i['price'],prod_type[1])
+                    prod.append(y)
+            x = Restaurante(restaur['name'],prod)
+            restaurantes.append(x)
+    return restaurantes
 
 def constructores_objetos(edd,pilotos):
     pilots, constructores = [] , []
