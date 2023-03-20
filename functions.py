@@ -1,22 +1,43 @@
 from Piloto import Piloto
 from Constructor import Constructor
+from Bebida import Bebida
+from Carrera import Carrera
+from Circuito import Circuito
+from Comida import Comida
+from Producto import Producto
+from Restaurante import Restaurante
+from Ubicacion import Ubicacion
 
 """Convertir las estructuras de datos en objetos"""
-def carrera_objects(edd):
+def carrera_objects(edd, circuitos):
     carreras = []
-    pass
+    contador = 0
+    for carrera in edd:
+        circ = circuitos[contador]
+        x = Carrera(carrera['round'],carrera['name'],circ, carrera['date'])
+        carreras.append(x)
+        contador+=1
+    return carreras
 
-"""id": "alfa",
-    "name": "Alfa Romeo",
-    "nationality": "Swiss"""
+def circuito_obj(edd):
+    circuitos=[]
+    for carrera in edd:
+        loc = Ubicacion(carrera['circuit']['location']['lat'],carrera['circuit']['location']['long'],carrera['circuit']['location']['locality'],carrera['circuit']['location']['country'])
+        x = Circuito(carrera['circuit']['circuitId'], carrera['circuit']['name'],loc)
+        circuitos.append(x)
+    return circuitos
+
+
 def constructores_objetos(edd,pilotos):
     pilots, constructores = [] , []
     for builder in edd:
+        pilots = []
         for piloto in pilotos:
             if piloto.team == builder['id']:
                 pilots.append(piloto.id)
-        x = Constructor(builder['id'],builder['name'],builder['nacionalidad'],pilots)
-
+        x = Constructor(builder['id'],builder['name'],builder['nationality'],pilots)
+        constructores.append(x)
+    return constructores
     
 def pilotos_objetos(edd):
     pilotos = []
