@@ -1,7 +1,9 @@
 class Producto:
-    def __init__(self, nombre, precio):
+    def __init__(self, nombre, subtotal, iva, total):
         self.nombre = nombre
-        self.precio = precio
+        self.subtotal = subtotal
+        self.iva = iva
+        self.total = total
         
     def mostrar(self):
         pass

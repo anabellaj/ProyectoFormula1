@@ -1,5 +1,5 @@
 class Carrera:
-    def __init__(self, ronda, nombre, circuito, fecha, restaurantes,podio,mapa):
+    def __init__(self, ronda, nombre, circuito, fecha, restaurantes,podio,mapa,asistencia):
         self.ronda = ronda
         self.nombre = nombre
         self.fecha = fecha
@@ -7,6 +7,7 @@ class Carrera:
         self.restaurantes = restaurantes
         self.podio = podio
         self.mapa  = mapa
+        self.asistencia = asistencia
 
     def mostrar(self):
         print(f"\nNombre: {self.nombre}\nFecha: {self.fecha}\n{self.circuito.mostrar()}")

@@ -1,14 +1,14 @@
 from Producto import Producto
 
 class Bebida(Producto):
-    def __init__(self, nombre, precio, alcoholico):
-        super().__init__(nombre, precio)
+    def __init__(self, nombre, subtotal, iva,total, alcoholico):
+        super().__init__(nombre, subtotal,iva,total)
         self.alcoholico = alcoholico
         
     def mostrar(self):
-        print(f"\n\tNombre: {self.nombre}\n\tPrecio: {self.precio}")
+        print(f"\n\tNombre: {self.nombre}\n\tSubtotal: {self.subtotal}$\n\tIVA: {self.iva}$\n\tPrecio total: {self.total}$")
         if self.alcoholico:
-            print('Bebida alcoholica')
+            print('\tBebida alcoholica')
         else:
-            print('Bebida no alcoholica')
+            print('\tBebida no alcoholica')
             

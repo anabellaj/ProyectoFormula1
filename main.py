@@ -14,7 +14,8 @@ def main():
     constructores = constructores_objetos(constructores_edd, pilotos)
     circuitos = circuito_obj(carreras_edd)
     carreras = carrera_objects(carreras_edd, circuitos)
-    restaurantes = restaurantes_obj(carreras_edd)
+    restaurantes, productos = restaurantes_obj(carreras_edd)
+    codigos, clientes = [], []
     
     while True:
         opt = get_option()
@@ -43,18 +44,38 @@ def main():
         #2: Gestion de venta de entradas
         elif opt == 2:
             print('\nUsted ha ingresado a la gestion de venta de entradas!')
-            clientes = get_client_data(carreras)
-        
+            clientes, carreras, codigos = get_client_data(carreras, codigos)
+            
+            # mapa = carreras[20].mapa
+            # print(carreras[20].nombre)
+            # imprimir_mapa(mapa)
+            
         #3: Gestion de asistencia a las carreras
         elif opt == 3:
             print('\nUsted ha ingresado a la gestion de asistencia a las carreras!')
-            pass
-        
+            opti = input('\nPresione 1 para validar un ticket\nPresione 2 para chequear la asistencia para una carrera\n>> ')
+            while not opti.isnumeric() or int(opti) not in range(1,3):
+                opti = input('\nERROR - Ingreso Invalido\nPresione 1 para validar un ticket\nPresione 2 para chequear la asistencia para una carrera\n>> ')
+            if opti == '1':
+                print('\n----- VALIDACION DE TICKETS -----')
+                carreras, codigos = confirmar_asistencia(clientes, codigos, carreras)
+            elif opti == '2':
+                print('\n----- CHEQUEO DE ASISTENCIA -----')
+                chequear_asistencia(carreras)
+            
         #4: Gestion de restaurantes
         elif opt == 4:
             print('\nUsted ha ingresado a la gestion de restaurantes!')
-            pass
-        
+            opti = input('\nPresione 1 para buscar productos por su nombre\nPresione 2 para buscar productos en un rango de precio\nPresione 3 para buscar productos por tipo\n>> ')
+            while not opti.isnumeric() or int(opti) not in range(1,4):
+                opti = input('\nERROR - Ingreso Invalido\nPresione 1 para buscar productos por su nombre\nPresione 2 para buscar productos en un rango de precio\nPresione 3 para buscar productos por tipo\n>> ')
+            if opti == '1':
+                pass
+            elif opti == '2':
+                pass
+            elif opti == '3':
+                productos_precio(productos)
+            
         #5: Gestion de venta de restaurantes 
         elif opt == 5:
             print('\nUsted ha ingresado a la gestion de venta de restaurantes!')
@@ -67,7 +88,7 @@ def main():
         
         #7: Salir
         else: 
-            print('\nHatsa pronto! ⚙️\n\n')
+            print('\nHasta pronto! ⚙️\n\n')
             break
     
     

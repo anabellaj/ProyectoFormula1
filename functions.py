@@ -20,7 +20,7 @@ def carrera_objects(edd, circuitos):
         rest = []
         for res in carrera['restaurants']:
             rest.append(res['name'])
-        x = Carrera(carrera['round'],carrera['name'],circ, carrera['date'], rest,False, '')
+        x = Carrera(carrera['round'],carrera['name'],circ, carrera['date'], rest,False, '', 0)
         carreras.append(x)
         contador+=1
     return carreras
@@ -35,26 +35,38 @@ def circuito_obj(edd):
 
 def restaurantes_obj(edd):
     restaurantes = []
+    productos = []
     for carrera in edd:
         for restaur in carrera['restaurants']:
             items = restaur['items']
             prod = []
             for i in items:   
                 # prod = []
+                subtotal = i['price']
+                subtotal = float(subtotal)
+                subtotal = int(subtotal)
                 prod_type = i['type'].split(':')
                 if prod_type[0] == 'drink':
                     if prod_type[1] == 'alcoholic':
-                        y = Bebida(i['name'], i['price'], True)
+                        y = Bebida(i['name'], subtotal, round(subtotal*0.16,2) ,round(subtotal*1.06,2), True)
                         prod.append(y)
+                        productos.append(y)
                     else:
-                        y = Bebida(i['name'], i['price'], False)
+                        y = Bebida(i['name'], subtotal, round(subtotal*0.16,2),round(subtotal*1.06,2), False)
                         prod.append(y)
+                        productos.append(y)
                 if prod_type[0] == 'food':
-                    y =Comida(i['name'], i['price'],prod_type[1])
-                    prod.append(y)
+                    if prod_type[1] == 'fast':
+                        y =Comida(i['name'], subtotal, round(subtotal*0.16,2),round(subtotal*1.06,2),'Comida de empaque')
+                        prod.append(y)
+                        productos.append(y)
+                    elif prod_type[1] == 'restaurant':
+                        y =Comida(i['name'], subtotal, round(subtotal*0.16,2),round(subtotal*1.06,2),'Comida de preparacion')
+                        prod.append(y)
+                        productos.append(y)
             x = Restaurante(restaur['name'],prod)
             restaurantes.append(x)
-    return restaurantes
+    return restaurantes, productos
 
 def constructores_objetos(edd,pilotos):
     puntaje = 0
@@ -89,7 +101,7 @@ def get_option():
             print('\nERROR - Por favor ingrese una opcion valida')
     return opt
 
-'''Modulo 1: Gestion de carreras y equipos'''
+'''Gestion 1: Carreras y equipos'''
 '''Funcion para obtener el podio de una carrera'''
 def get_podio(pilotos, carreras, constructores):
     puntaje = {1:25,2:18,3:15,4:12,5:10,6:8,7:6,8:4,9:2,10:1}
@@ -185,15 +197,20 @@ def filter_months(carreras):
     if contador == 0:
         print(f"\nNo hay carreras durante el mes de {mes}")
 
-'''Modulo 2: Gestion de venta de entradas'''
+'''Gestion 2: Venta de entradas'''
 '''Obtener los datos del cliente'''
-def get_client_data(carreras):
+def get_client_data(carreras, codigos):
     clientes = []
     print('\nPor favor ingrese los datos solicitados a continuacion para poder comprar su entrada!')
-    nombre = input('Nombre completo: ').title()
+    nombre = input('Nombre completo: ')
     identificacion = input('Numero de identificacion (sin puntos!): ')
-    while not identificacion.isnumeric():
-        identificacion = input('\nERROR - Ingreso Invalido\nPor favor ingrese su numero de identificacion sin puntos: ')
+    while not identificacion.isnumeric() or identificacion in codigos:
+        if not identificacion.isnumeric():
+            print('\nERROR - Ingreso Invalido - Por favor ingrese su identificacion sin puntos')
+        if identificacion in codigos:
+            print('\nERROR - Ingreso Invalido - Ya exite un existe un ticket con la cedula ingresada')
+        identificacion = input('\nPor favor ingrese su numero de identificacion sin puntos: ')
+    codigos.append(identificacion)
     edad = input('Edad: ')
     while not edad.isnumeric() or int(edad) not in range(1,101):
         edad = input('\nERROR - Ingreso Invalido\nPor favor ingrese su edad reflejada en un numero entre el 0 y 100: ')
@@ -220,8 +237,9 @@ def get_client_data(carreras):
     if mapa == None:
         return 
     subtotal = entradas[tipo_entrada] * cantidad
-    descuento = 0
-    if num_ondulado(subtotal):
+    descuento, disc = 0, False
+    if num_ondulado(identificacion):
+        disc = True
         descuento = subtotal*0.5
     iva = subtotal*0.16
     precio = subtotal+iva-descuento
@@ -231,10 +249,10 @@ def get_client_data(carreras):
     if input('\nPresione cualquier tecla para confirmar orden o presione "X" para cancelar: ').title() != 'X':
         carreras[circuito].mapa = mapa
         y = Ticket(tipo_entrada, cantidad, asientos, precio)
-        x = Cliente(nombre,identificacion,edad,carrera,y)
+        x = Cliente(nombre,identificacion,edad,carreras[circuito].nombre,y, descuento)
         clientes.append(x)
         print('\nSus tickets se han comprado con exito!')
-        return clientes
+        return clientes, carreras, codigos
     else:
         print('\nOrden cancelada')
 
@@ -276,26 +294,36 @@ def get_asientos(cantidad):
     contador =1
     imprimir_mapa(mapa)
     while cantidad >= contador:
-        asiento = {}
-        fila = input(f"Seleccione la fila de su entrada numero {contador}: ")
-        while not fila.isnumeric() or int(fila) not in range (1,11):
-            fila = input(f"\nERROR - Ingreso Invalido\nSeleccione la fila de su entrada numero {contador}: ")
-        columna = input(f"Seleccione la columna de su entrada numero {contador}: ")
-        while not columna.isnumeric() or int(columna) not in range (1,11):
-            columna = input(f"\nERROR - Ingreso Invalido\nSeleccione la columna de su entrada numero {contador}: ")
-        mapa[int(fila)-1][int(columna)-1]=True
-        asiento.update({fila: columna})
-        contador += 1
+        while True:
+            try: 
+                asiento = {}
+                fila = input(f"Seleccione la fila de su entrada numero {contador}: ")
+                while not fila.isnumeric() or int(fila) not in range (1,11):
+                    fila = input(f"\nERROR - Ingreso Invalido\nSeleccione la fila de su entrada numero {contador}: ")
+                columna = input(f"Seleccione la columna de su entrada numero {contador}: ")
+                while not columna.isnumeric() or int(columna) not in range (1,11):
+                    columna = input(f"\nERROR - Ingreso Invalido\nSeleccione la columna de su entrada numero {contador}: ")
+                asiento.update({fila: columna})
+                if asiento in asientos:
+                    raise Exception
+
+                break
+            except:
+                print(f"\nEl asiento {fila} {columna} ya esta ocupado. Por favor elija otro asiento.")
         asientos.append(asiento)
+        mapa[int(fila)-1][int(columna)-1]=True
+        contador += 1
     imprimir_mapa(mapa)
     if input('\nPresione cualquier tecla para continuar: ').title != 'X':
         return mapa, asientos
     
+'''Funcion para determinar si un numero es ondulado'''
 def num_ondulado(number):
+    ondulado = True
     count = 0
     even_index = list(str(number))[0]
     odd_index = list(str(number))[1]
-    if number < 100:
+    if int(number) < 100:
         return True
     elif even_index == odd_index:
         return False
@@ -313,3 +341,54 @@ def num_ondulado(number):
             return True
         else:
             return False
+        
+'''Gestion 3: Asistencia a las carreras'''
+def confirmar_asistencia(clientes, codigos, carreras):
+    cod = input('Ingrese el numero de cedula con la cual compro su ticket: ')
+    while not cod.isnumeric():
+        cod = input('\nPor favor ingrese su numero de identificacion sin puntos: ')
+    if cod in codigos:
+        print('\nSu ticket es valido!')
+        for cliente in clientes:
+            if cliente.identificacion == cod:
+                for carrera in carreras:
+                    if carrera.nombre == cliente.carrera:
+                        carrera.asistencia += cliente.ticket.cantidad
+                        codigos.remove(cod)
+                        return carreras, codigos
+    else:
+        print('\nLo sentimos, su ticket no es valido')
+  
+def chequear_asistencia(carreras):
+    for i, carrera in enumerate(carreras):
+        print('\t',i+1, carrera.nombre)
+    circuito = input('Ingrese el numero correspondiente al circuito al cual desee chequear su asistencia: ')
+    while not circuito.isnumeric() or int(circuito) not in range(1,len(carreras)+1):
+        circuito = input(f"\nERROR - Ingreso Invalido\nPor favor ingrese un numero entre 1 y {len(carreras)+1} correspondiente al circuito a asistir: ")
+    circuito = int(circuito)-1
+    print(f"\nAl {carreras[circuito].nombre} asistiran {carreras[circuito].asistencia} personas.")
+    
+'''Gestion 4: Restaurantes'''
+'''Buscar productos por nombre'''
+def products_nombre(productos):
+    print('')
+    
+'''Buscar productos por rango de precio'''
+def productos_precio(productos):
+    while True:
+        try:
+            minimo = int(input('Ingrese el minimo precio del producto que desea obtener: '))
+            break
+        except:
+            print('\nERROR - Por favor ingrese un numero entero!')
+    while True:
+        try:
+            maximo = int(input('Ingrese el maximo precio del producto que desea obtener: '))
+            break
+        except:
+            print('\nERROR - Por favor ingrese un numero entero!')
+    print(f"Productos disponibles en el rango de {minimo}$ a {maximo}$")
+    for prod in productos:
+        if int(prod.total) in range (minimo, maximo+1):
+            prod.mostrar()
+            
