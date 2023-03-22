@@ -1,6 +1,6 @@
 
 class Piloto:
-    def __init__(self,id,permanentNumber,code,team,firstName,lastName,dateOfBirth,nationality):
+    def __init__(self,id,permanentNumber,code,team,firstName,lastName,dateOfBirth,nationality, score):
         self.id = id
         self.permanentNumber = permanentNumber
         self.code = code
@@ -9,7 +9,7 @@ class Piloto:
         self.lastName = lastName
         self.dateOfBirth = dateOfBirth
         self.nationality = nationality
+        self.score = score
 
     def mostrar(self):
-        print(self.id,self.permanentNumber,self.code,self.team,self.firstName,self.lastName,self.dateOfBirth,self.nationality)
-        
+        print(f"Nombre: {self.firstName} {self.lastName}\nFecha de nacimiento: {self.dateOfBirth}\nNacionalidad: {self.nationality}\nCodigo: {self.code}\nPuntaje: {self.score}")

@@ -1,17 +1,25 @@
-
 class Carrera:
-    def __init__(self, ronda, nombre, circuito, fecha, restaurantes):
+    def __init__(self, ronda, nombre, circuito, fecha, restaurantes,podio,mapa):
         self.ronda = ronda
         self.nombre = nombre
         self.fecha = fecha
         self.circuito = circuito
         self.restaurantes = restaurantes
+        self.podio = podio
+        self.mapa  = mapa
 
     def mostrar(self):
-        print(self.ronda, self.nombre,self.circuito.mostrar(),self.fecha)
+        print(f"\nNombre: {self.nombre}\nFecha: {self.fecha}\n{self.circuito.mostrar()}")
+        print('Restaurantes:')
         for r in self.restaurantes:
-            r.mostrar()
-    
+            print('\t',r)
+        # if self.podio:
+        #     print('\nPodio:',self.podio)
+        
+    def get_month(self):
+        mes = self.fecha.split('-')
+        return mes[1]
+        
         
         
         

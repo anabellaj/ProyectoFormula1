@@ -5,5 +5,5 @@ class Circuito:
         self.location = location
         
     def mostrar(self):
-        print(f"CIRCUITO\nID: {self.id}\nName: {self.name}\n{self.location.mostrar()}")
+        return(f"CIRCUITO\nID: {self.id}\nName: {self.name}\n{self.location.mostrar()}")
         
