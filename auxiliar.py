@@ -4,31 +4,47 @@ from Restaurante import Restaurante
 from Bebida import Bebida
 from Comida import Comida
 
-def main():
-    carrera_edd = carrera_url.json()
-    def restaurantes_obj(edd):
-        restaurantes = []
-        for carrera in edd:
-            for restaur in carrera['restaurants']:
-                items = restaur['items']
-                for i in items:   
-                    prod = []
-                    prod_type = i['type'].split(':')
-                    if prod_type[0] == 'drink':
-                        if prod_type[1] == 'alcoholic':
-                            y = Bebida(items['name'], items['price'], True)
-                            prod.append(y)
-                        else:
-                            y = Bebida(items['name'], items['price'], False)
-                            prod.append(y)
-                    if prod_type[0] == 'food':
-                        y =Comida(items['name'], items['price'],prod_type[1])
-                        prod.append(y)
-                x = Restaurante(restaur['name'],prod)
-                restaurantes.append(x)
-        return restaurantes
-    input('go')
-    r = restaurantes_obj(carrera_edd)
-    for t in r:
-        t.mostrar()
-main()
+input('go')
+def crear_mapa(filas,columnas):
+    mapa = []
+    for y in range(filas):
+        aux = []
+        for x in range(columnas):
+            aux.append(False)
+        mapa.append(aux)
+    return mapa 
+
+def imprimir_mapa(mapa):
+    print('*'*len(mapa[1]) + 'ASIENTOS DISPONIBLES'+'*'*len(mapa[1]))
+    print('\n')
+    nums = '    '
+    for i, x in enumerate(mapa[1]):
+        if i > 8 :
+            nums += str(i+1)+'|'
+        else:
+            nums +=  str(i+1)+'|  '
+    print(nums)
+    for i, x in enumerate(mapa):
+        if i>8:
+
+            auxiliar= str(i+1)
+        else:
+            auxiliar= str(i+1)+" "
+        for y in x:
+            if y ==True:
+                auxiliar+="| X "
+            else:
+                auxiliar+="|   "
+
+        print("   "+"-"*len(mapa[1]*4))
+        print(auxiliar)
+
+mapa = crear_mapa(10,10)
+imprimir_mapa(mapa)
+
+
+fila = input("Seleccione la fila:  ")
+columna = input("Seleccione la columna ")
+
+mapa[int(fila)-1][int(columna)-1]=True
+imprimir_mapa(mapa)
