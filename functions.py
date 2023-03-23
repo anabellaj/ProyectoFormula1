@@ -10,6 +10,7 @@ from Restaurante import Restaurante
 from Ubicacion import Ubicacion
 from Cliente import Cliente
 from Ticket import Ticket
+from Compra import Compra
 
 """Convertir las estructuras de datos en objetos"""
 def carrera_objects(edd, circuitos):
@@ -48,23 +49,23 @@ def restaurantes_obj(edd):
                 prod_type = i['type'].split(':')
                 if prod_type[0] == 'drink':
                     if prod_type[1] == 'alcoholic':
-                        y = Bebida(i['name'], subtotal, round(subtotal*0.16,2) ,round(subtotal*1.06,2), True)
+                        y = Bebida(i['name'],300, subtotal, round(subtotal*0.16,2) ,round(subtotal*1.16,2), True)
                         prod.append(y)
                         productos.append(y)
                     else:
-                        y = Bebida(i['name'], subtotal, round(subtotal*0.16,2),round(subtotal*1.06,2), False)
+                        y = Bebida(i['name'],300, subtotal, round(subtotal*0.16,2),round(subtotal*1.16,2), False)
                         prod.append(y)
                         productos.append(y)
                 if prod_type[0] == 'food':
                     if prod_type[1] == 'fast':
-                        y =Comida(i['name'], subtotal, round(subtotal*0.16,2),round(subtotal*1.06,2),'Comida de empaque')
+                        y =Comida(i['name'],300, subtotal, round(subtotal*0.16,2),round(subtotal*1.16,2),'Comida de empaque')
                         prod.append(y)
                         productos.append(y)
                     elif prod_type[1] == 'restaurant':
-                        y =Comida(i['name'], subtotal, round(subtotal*0.16,2),round(subtotal*1.06,2),'Comida de preparacion')
+                        y =Comida(i['name'],300, subtotal, round(subtotal*0.16,2),round(subtotal*1.16,2),'Comida de preparacion')
                         prod.append(y)
                         productos.append(y)
-            x = Restaurante(restaur['name'],prod)
+            x = Restaurante(restaur['name'],prod, carrera['name'])
             restaurantes.append(x)
     return restaurantes, productos
 
@@ -254,7 +255,7 @@ def get_client_data(carreras, codigos):
         print('\nSus tickets se han comprado con exito!')
         return clientes, carreras, codigos
     else:
-        print('\nOrden cancelada')
+        return None
 
 def crear_mapa(filas=10,columnas=10):
     mapa = []
@@ -369,12 +370,70 @@ def chequear_asistencia(carreras):
     print(f"\nAl {carreras[circuito].nombre} asistiran {carreras[circuito].asistencia} personas.")
     
 '''Gestion 4: Restaurantes'''
+'''Verificar cliente VIP'''
+def verify_vip(clientes):
+    vip = []
+    for cliente in clientes:
+        if cliente.ticket.tipo_entrada == 'VIP':
+            vip.append(cliente.identificacion)
+    ced = input('\nPor favor ingrese su numero de identificacion para poder acceder a los productos: ')
+    while not ced.isnumeric():
+        ced = input('\nERROR - Ingreso Invalido\nPor favor ingrese su numero de identificacion para poder acceder a los productos: ')
+    if ced not in vip:
+        print('Debe comprar una entrada vip para poder acceder a los productos!')
+        return False
+    elif ced in vip:
+        print('Usted es un cliente vip!')
+        return cliente
+        
 '''Buscar productos por nombre'''
-def products_nombre(productos):
-    print('')
+def products_nombre(restaurantes, cliente):
+    print(f"Productos disponibles en {cliente.carrera}")
+    prod,go = [],False
+    for r in (restaurantes):
+        if r.carrera == cliente.carrera:
+            for p in (r.productos):
+                prod.append(p)
+                go = True
+    for i,p in enumerate(prod):
+        print(i+1,p.nombre)
+    if go:
+        choice = input('\nIngrese el numero correspondiente al producto del cual desee ver su informacion completa: ')
+        while not choice.isnumeric() or int(choice) not in range(1,len(prod)+1):
+            print(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
+        choice = int(choice) -1
+        for i,p in enumerate(prod):
+            if i == choice:
+                p.mostrar()
+    else:
+        print(f"Lo sentimos, no hay productos disponibles en el {cliente.carrera}")
+
+'''Buscar productos por tipo'''
+def products_type(restaurantes,cliente):
+    choice = input('\nPresione 1 para ver productos de tipo bebida\nPresione 2 para ver productos de tipo comida\n>> ')
+    while not choice.isnumeric() or int(choice) not in range(1,3):
+        choice = input('\nERROR - Ingreso Invalido\nPor favor ingrese 1 para bebidas o 2 para comidas: ')
+    prod,go = [],False
+    for r in (restaurantes):
+        if r.carrera == cliente.carrera:
+            for p in (r.productos):
+                prod.append(p)
+                go = True
+    if go:
+        for p in prod:
+            if choice == '1':
+                print('Bebidas disponibles en',cliente.carrera)
+                if isinstance(p, Bebida):
+                    p.mostrar()
+            elif choice == '2':
+                print('Comida disponible en',cliente.carrera)
+                if isinstance(p, Comida):
+                    p.mostrar()
+    else:
+        print(f"\nLo sentimos, no hay productos en el {cliente.carrera}")
     
 '''Buscar productos por rango de precio'''
-def productos_precio(productos):
+def productos_precio(restaurantes, cliente):
     while True:
         try:
             minimo = int(input('Ingrese el minimo precio del producto que desea obtener: '))
@@ -387,8 +446,93 @@ def productos_precio(productos):
             break
         except:
             print('\nERROR - Por favor ingrese un numero entero!')
-    print(f"Productos disponibles en el rango de {minimo}$ a {maximo}$")
-    for prod in productos:
-        if int(prod.total) in range (minimo, maximo+1):
-            prod.mostrar()
-            
+    prod, go = [], False
+    for r in (restaurantes):
+        if r.carrera == cliente.carrera:
+            for p in (r.productos):
+                if int(float(p.total)) in range (minimo,maximo+1):
+                    prod.append(p)
+                    go=True
+    if go:
+        print(f"\nProductos disponibles en el rango de {minimo}$ a {maximo}$")
+        for p in prod:
+            p.mostrar()
+    else:
+        print(f"\nLo sentimos, no hay productos disponibles en el {cliente.carrera}")
+       
+'''Gestion 5: Venta de restaurante'''
+def get_compra(cliente, restaurantes):
+    compras = []
+    orden = {}
+    precio = 0
+    while True:
+        print(f"Productos disponibles en {cliente.carrera}")
+        prod,go = [],False
+        for r in (restaurantes):
+            if r.carrera == cliente.carrera:
+                for p in (r.productos):
+                    prod.append(p)
+                    go = True
+        for i,p in enumerate(prod):
+            print(i+1,p.nombre)
+        if go:
+            choice = input('\nIngrese el numero correspondiente al producto que desee comprar: ')
+            while not choice.isnumeric() or int(choice) not in range(1,len(prod)+1):
+                print(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
+            choice = int(choice) -1
+            while True:
+                if not isinstance(prod[choice], Bebida):
+                    break
+                else:
+                    if prod[choice].alcoholic and cliente.edad > 18:
+                        choice = input('Recuerde que los menores de edad no pueden comprar bebidas alcoholicas!\nPor favor seleccione otro producto: ')
+                        while not choice.isnumeric() or int(choice) not in range(1,len(prod)+1):
+                            print(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
+                        choice = int(choice) -1    
+                        continue
+            cantidad = input(f"Cuantos {prod[choice].nombre} desea? Recuerde que solo hay {prod[choice].inventario} unidades disponibles: ")
+            while not cantidad.isnumeric() or cantidad not in range(1,(prod[choice].inventario)+1):
+                cantidad = input('\nERROR - Ingreso Invalido\nCuantos productos desea? Por favor ingrese un numero entero: ')
+            if prod[choice] not in orden.keys():
+                orden.update({prod[choice]:cantidad})
+            else:
+                orden[prod[choice]] += cantidad
+            precio += prod[choice].total * cantidad
+            prod[choice].inventario -= cantidad
+            if input('Presione "X" para comprar otro producto o cualquier tecla para finalizar su compra: ').title() != 'X':
+                break
+            else:
+                continue
+        else:
+            print(f"Lo sentimos, no hay productos disponibles en el {cliente.carrera}")
+            return False
+    if perfectos(cliente.identificacion):
+        x = Compra(cliente.identificacion, orden, precio, precio*0.15, (precio-(precio*0.15)))
+        print(f"----- Compra de {cliente.nombre} -----")
+        x.mostrar()
+        if input('Presione cualquier tecla para confirmar o "X" para cancelar compra: ').title() !='X':   
+            compras.append(x)
+            return restaurantes, compras
+        else:
+            print('Se ha cancelado la compra')
+    else:
+        x = Compra(cliente.identificacion, orden, precio, 0, precio)
+        print(f"----- Compra de {cliente.nombre} -----")
+        x.mostrar()
+        if input('Presione cualquier tecla para confirmar o "X" para cancelar compra: ').title() !='X':   
+            compras.append(x)
+            return restaurantes, compras
+        else:
+            return None
+   
+'''Determinar si un numero es perfecto'''
+def perfectos(num):
+    num = int(num)
+    suma = 0
+    for divisor in range(1, num):
+        if (num % divisor) == 0:
+            suma += divisor
+    if suma == num:
+        return True
+    else:
+        return False

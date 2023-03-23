@@ -1,7 +1,8 @@
 class Restaurante:
-    def __init__(self, nombre, productos):
+    def __init__(self, nombre, productos,carrera):
         self.nombre = nombre
         self.productos = productos
+        self.carrera = carrera
         
     def mostrar(self):
         print(f"Nombre: {self.nombre}")

@@ -44,8 +44,10 @@ def main():
         #2: Gestion de venta de entradas
         elif opt == 2:
             print('\nUsted ha ingresado a la gestion de venta de entradas!')
-            clientes, carreras, codigos = get_client_data(carreras, codigos)
-            
+            try:
+                clientes, carreras, codigos = get_client_data(carreras, codigos)
+            except:
+                print('Compra cancelada')
             # mapa = carreras[20].mapa
             # print(carreras[20].nombre)
             # imprimir_mapa(mapa)
@@ -66,31 +68,70 @@ def main():
         #4: Gestion de restaurantes
         elif opt == 4:
             print('\nUsted ha ingresado a la gestion de restaurantes!')
-            opti = input('\nPresione 1 para buscar productos por su nombre\nPresione 2 para buscar productos en un rango de precio\nPresione 3 para buscar productos por tipo\n>> ')
-            while not opti.isnumeric() or int(opti) not in range(1,4):
-                opti = input('\nERROR - Ingreso Invalido\nPresione 1 para buscar productos por su nombre\nPresione 2 para buscar productos en un rango de precio\nPresione 3 para buscar productos por tipo\n>> ')
-            if opti == '1':
-                pass
-            elif opti == '2':
-                pass
-            elif opti == '3':
-                productos_precio(productos)
-            
+            cliente = verify_vip(clientes)
+            if cliente == False:
+                continue
+            else:
+                opti = input('\nPresione 1 para buscar productos por su nombre\nPresione 2 para buscar productos en un rango de precio\nPresione 3 para buscar productos por tipo\n>> ')
+                while not opti.isnumeric() or int(opti) not in range(1,4):
+                    opti = input('\nERROR - Ingreso Invalido\nPresione 1 para buscar productos por su nombre\nPresione 2 para buscar productos en un rango de precio\nPresione 3 para buscar productos por tipo\n>> ')
+                if opti == '1':
+                    print('\n----- BUSQUEDA DE PRODUCTOS POR NOMBRE -----')
+                    products_nombre(restaurantes,cliente)
+                elif opti == '2':
+                    print('\n----- BUSQUEDA DE PRODUCTOS POR RANGO DE PRECIO -----')
+                    productos_precio(restaurantes,cliente)
+                elif opti == '3':
+                    print('\n----- BUSQUEDA DE PRODUCTOS POR TIPO -----')
+                    products_type(restaurantes,cliente)
+                
         #5: Gestion de venta de restaurantes 
         elif opt == 5:
             print('\nUsted ha ingresado a la gestion de venta de restaurantes!')
-            pass
-        
+            cliente = verify_vip(clientes)
+            if cliente == False:
+                continue
+            else:
+                try:
+                    restaurantes, compras = get_compra(cliente,restaurantes)
+                except:
+                    print('Se ha cancelado la compra')
+                    
         #6: Estadisticas
         elif opt == 6:
             print('\nUsted ha ingresado a la seccion de estadisticas!')
-            pass
-        
+            opti = ('\nPresione 1 para ver el promedio de gasto de un cliente VIP\nPresione 2 para ver la tabla de asistencia a las carreras\nPresione 3 para ver la carrera con mayor asistencia\nPresione 4 para ver la carrera con mayor boletos vendidos\nPresione 5 para ver el top 3 de productos mas vendidos\nPresione 6 para ver el top 3 de clientes\nPresione 7 para ver el grafico de las estadisticas\nPresione 8 para volver al menu inicial\n>> ')
+            while not opti.isnumeric() or opti not in range(1,9):
+                opti = ('\nERROR - Ingreso Invalido\nPresione 1 para ver el promedio de gasto de un cliente VIP\nPresione 2 para ver la tabla de asistencia a las carreras\nPresione 3 para ver la carrera con mayor asistencia\nPresione 4 para ver la carrera con mayor boletos vendidos\nPresione 5 para ver el top 3 de productos mas vendidos\nPresione 6 para ver el top 3 de clientes\nPresione 7 para ver el grafico de las estadisticas\nPresione 8 para volver al menu inicial\n>> ')
+            opti = int(opti)
+            if opti ==1:
+                print('\n----- PROMEDIO DE GASTO DE UN CLIENTE VIP -----')
+                
+            elif opti == 2:
+                print('\n----- TABLA DE ASISTENCIA A LAS CARRERAS -----')
+                
+            elif opti == 3:
+                print('\n----- CARRERA CON MAYOR ASISTENCIA -----')
+
+            elif opti == 4:
+                print('\n----- CARRERA CON MAYOR BOLETOS VENDIDOS -----')
+            
+            elif opti == 5:
+                print('\n----- TOP 3 PRODUCTOS VENDIDOS -----')
+                
+            elif opti == 6:
+                print('\n----- TOP 3 CLIENTES -----')
+                
+            elif opti == 7:
+                print('\n----- GRAFICO DE LAS ESTADISTICAS -----')
+                
+            elif opti == 8:
+                pass
+            
         #7: Salir
         else: 
             print('\nHasta pronto! ⚙️\n\n')
             break
     
-    
-    
+  
 main()
