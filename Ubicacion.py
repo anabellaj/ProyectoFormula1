@@ -6,4 +6,4 @@ class Ubicacion:
         self.pais = pais
         
     def mostrar(self):
-        return (f"UBICACION:\n\tLatitud: {self.latitud}\n\tLongitud: {self.longitud}\n\tCiudad: {self.ciudad}\n\tPais: {self.pais}\n")
+        return (f"UBICACION:\n\tLatitud: {self.latitud}\n\tLongitud: {self.longitud}\n\tCiudad: {self.ciudad}\n\tPais: {self.pais}")

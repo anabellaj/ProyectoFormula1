@@ -16,12 +16,13 @@ from Compra import Compra
 def carrera_objects(edd, circuitos):
     carreras = []
     contador = 0
+    mapa = crear_mapa()
     for carrera in edd:
         circ = circuitos[contador]
         rest = []
         for res in carrera['restaurants']:
             rest.append(res['name'])
-        x = Carrera(carrera['round'],carrera['name'],circ, carrera['date'], rest,False, '', 0)
+        x = Carrera(carrera['round'],carrera['name'],circ, carrera['date'], rest,False, mapa, 0,0)
         carreras.append(x)
         contador+=1
     return carreras
@@ -144,7 +145,7 @@ def filter_paises(constructores):
     print(f"\nConstructores de {pais}")
     for constructor in constructores:
         if constructor.nacionalidad == paises[pais]:
-            print('\t🏁',constructor.nombre)
+            print('\n\t🏁',constructor.nombre, '\nPuntaje: ',constructor.score)
 
 '''Ver pilotos de cada constructor'''
 def filter_pilots(constructores):
@@ -199,9 +200,8 @@ def filter_months(carreras):
         print(f"\nNo hay carreras durante el mes de {mes}")
 
 '''Gestion 2: Venta de entradas'''
-'''Obtener los datos del cliente'''
-def get_client_data(carreras, codigos):
-    clientes = []
+'''Obtener los datos del cliente y comprar entradas'''
+def get_client_data(clientes,carreras, codigos):
     print('\nPor favor ingrese los datos solicitados a continuacion para poder comprar su entrada!')
     nombre = input('Nombre completo: ')
     identificacion = input('Numero de identificacion (sin puntos!): ')
@@ -211,7 +211,6 @@ def get_client_data(carreras, codigos):
         if identificacion in codigos:
             print('\nERROR - Ingreso Invalido - Ya exite un existe un ticket con la cedula ingresada')
         identificacion = input('\nPor favor ingrese su numero de identificacion sin puntos: ')
-    codigos.append(identificacion)
     edad = input('Edad: ')
     while not edad.isnumeric() or int(edad) not in range(1,101):
         edad = input('\nERROR - Ingreso Invalido\nPor favor ingrese su edad reflejada en un numero entre el 0 y 100: ')
@@ -230,31 +229,40 @@ def get_client_data(carreras, codigos):
         tipo_entrada = 'VIP'
     else: 
         tipo_entrada ='General'
-    cantidad = input(f"Cuantas entradas de tipo {tipo_entrada} desea?: ")
-    while not cantidad.isnumeric():
-        cantidad = input(f"\nERROR - Ingreso Invalido\nCuantas entradas de tipo {tipo_entrada} desea?: ")
+    c = carreras[circuito]
+    disponibles = 100-c.boletos_vendidos
+    cantidad = input(f"Cuantas entradas de tipo {tipo_entrada} desea? Solo hay {disponibles} entradas disponibles: ")
+    while not cantidad.isnumeric() or int(cantidad) not in range(1,disponibles+1):
+        cantidad = input(f"\nERROR - Ingreso Invalido\nCuantas entradas de tipo {tipo_entrada} desea? Recuerde que solo hay {disponibles} entrads disponibles: ")
     cantidad = int(cantidad)
-    mapa, asientos = get_asientos(cantidad)
-    if mapa == None:
-        return 
+    asientos = get_asientos(cantidad, c) 
     subtotal = entradas[tipo_entrada] * cantidad
     descuento, disc = 0, False
-    if num_ondulado(identificacion):
+    if num_ondulado(int(identificacion)) == True:
         disc = True
         descuento = subtotal*0.5
     iva = subtotal*0.16
     precio = subtotal+iva-descuento
     print(f"\n-----COMPRA DE {nombre.upper()}-----\nCarrera: {carreras[circuito].nombre}\nEntradas de tipo {tipo_entrada}: {cantidad}\nAsientos: {asientos}\nSubtotal: {subtotal}\nDescuento: {descuento}\nIVA: {iva}\nMonto total: {precio}$")
-    if descuento != 0:
+    if disc:
         print('Se ha aplicado un descuento del 50%')
     if input('\nPresione cualquier tecla para confirmar orden o presione "X" para cancelar: ').title() != 'X':
-        carreras[circuito].mapa = mapa
         y = Ticket(tipo_entrada, cantidad, asientos, precio)
-        x = Cliente(nombre,identificacion,edad,carreras[circuito].nombre,y, descuento)
+        x = Cliente(nombre,identificacion,edad,c.nombre,y, descuento)
         clientes.append(x)
+        codigos.append(x.identificacion)
+        # for asiento in asientos:
+        #     for fila,columna in asiento.items():
+        #         for carrera in carreras:
+        #             if carrera != c:
+        #                 carrera.mapa[int(fila)-1][int(columna)-1]= False
         print('\nSus tickets se han comprado con exito!')
+        c.boletos_vendidos += y.cantidad
         return clientes, carreras, codigos
     else:
+        for asiento in asientos:
+            for fila,columna in asiento.items():
+                c.mapa[int(fila)-1][int(columna)-1]= False
         return None
 
 def crear_mapa(filas=10,columnas=10):
@@ -289,11 +297,10 @@ def imprimir_mapa(mapa):
         print("   "+"-"*len(mapa[1]*4))
         print(auxiliar)
         
-def get_asientos(cantidad):
+def get_asientos(cantidad,carrera):
     asientos = []
-    mapa = crear_mapa()
     contador =1
-    imprimir_mapa(mapa)
+    imprimir_mapa(carrera.mapa)
     while cantidad >= contador:
         while True:
             try: 
@@ -307,23 +314,27 @@ def get_asientos(cantidad):
                 asiento.update({fila: columna})
                 if asiento in asientos:
                     raise Exception
-
+                if carrera.mapa[int(fila)-1][int(columna)-1]:
+                    raise Exception
                 break
             except:
                 print(f"\nEl asiento {fila} {columna} ya esta ocupado. Por favor elija otro asiento.")
         asientos.append(asiento)
-        mapa[int(fila)-1][int(columna)-1]=True
+        carrera.mapa[int(fila)-1][int(columna)-1]=True
         contador += 1
-    imprimir_mapa(mapa)
-    if input('\nPresione cualquier tecla para continuar: ').title != 'X':
-        return mapa, asientos
+    print('Sus asientos seleccionados se representan con una "X"')
+    imprimir_mapa(carrera.mapa)
+    return asientos
     
 '''Funcion para determinar si un numero es ondulado'''
 def num_ondulado(number):
     ondulado = True
     count = 0
     even_index = list(str(number))[0]
-    odd_index = list(str(number))[1]
+    if number in range(1,10):
+        return True
+    else:
+        odd_index = list(str(number))[1]
     if int(number) < 100:
         return True
     elif even_index == odd_index:
@@ -358,7 +369,7 @@ def confirmar_asistencia(clientes, codigos, carreras):
                         codigos.remove(cod)
                         return carreras, codigos
     else:
-        print('\nLo sentimos, su ticket no es valido')
+        return None
   
 def chequear_asistencia(carreras):
     for i, carrera in enumerate(carreras):
@@ -370,7 +381,7 @@ def chequear_asistencia(carreras):
     print(f"\nAl {carreras[circuito].nombre} asistiran {carreras[circuito].asistencia} personas.")
     
 '''Gestion 4: Restaurantes'''
-'''Verificar cliente VIP'''
+'''Verificar si un cliente es VIP'''
 def verify_vip(clientes):
     vip = []
     for cliente in clientes:
@@ -461,8 +472,8 @@ def productos_precio(restaurantes, cliente):
         print(f"\nLo sentimos, no hay productos disponibles en el {cliente.carrera}")
        
 '''Gestion 5: Venta de restaurante'''
-def get_compra(cliente, restaurantes):
-    compras = []
+'''Comprar productos pertenecientes a la carrera a la que asiste el cliente'''
+def get_compra(compras, cliente, restaurantes):
     orden = {}
     precio = 0
     while True:
@@ -478,25 +489,28 @@ def get_compra(cliente, restaurantes):
         if go:
             choice = input('\nIngrese el numero correspondiente al producto que desee comprar: ')
             while not choice.isnumeric() or int(choice) not in range(1,len(prod)+1):
-                print(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
+                choice = input(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
             choice = int(choice) -1
             while True:
                 if not isinstance(prod[choice], Bebida):
                     break
                 else:
-                    if prod[choice].alcoholic and cliente.edad > 18:
+                    if prod[choice].alcoholico and int(cliente.edad) < 18:
                         choice = input('Recuerde que los menores de edad no pueden comprar bebidas alcoholicas!\nPor favor seleccione otro producto: ')
                         while not choice.isnumeric() or int(choice) not in range(1,len(prod)+1):
-                            print(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
+                            choice = input(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
                         choice = int(choice) -1    
                         continue
+                    else:
+                        break
             cantidad = input(f"Cuantos {prod[choice].nombre} desea? Recuerde que solo hay {prod[choice].inventario} unidades disponibles: ")
-            while not cantidad.isnumeric() or cantidad not in range(1,(prod[choice].inventario)+1):
+            while not cantidad.isnumeric() or int(cantidad) not in range(1,(prod[choice].inventario)+1):
                 cantidad = input('\nERROR - Ingreso Invalido\nCuantos productos desea? Por favor ingrese un numero entero: ')
-            if prod[choice] not in orden.keys():
-                orden.update({prod[choice]:cantidad})
+            cantidad =  int(cantidad)
+            if prod[choice].nombre not in orden.keys():
+                orden.update({prod[choice].nombre:cantidad})
             else:
-                orden[prod[choice]] += cantidad
+                orden[prod[choice].nombre] += cantidad
             precio += prod[choice].total * cantidad
             prod[choice].inventario -= cantidad
             if input('Presione "X" para comprar otro producto o cualquier tecla para finalizar su compra: ').title() != 'X':
@@ -505,25 +519,34 @@ def get_compra(cliente, restaurantes):
                 continue
         else:
             print(f"Lo sentimos, no hay productos disponibles en el {cliente.carrera}")
-            return False
-    if perfectos(cliente.identificacion):
+    if perfectos(cliente.identificacion) ==  True:
         x = Compra(cliente.identificacion, orden, precio, precio*0.15, (precio-(precio*0.15)))
-        print(f"----- Compra de {cliente.nombre} -----")
+        print(f"\n\n\t----- COMPRA DE {cliente.nombre.upper()} -----")
         x.mostrar()
-        if input('Presione cualquier tecla para confirmar o "X" para cancelar compra: ').title() !='X':   
+        if input('\nPresione cualquier tecla para confirmar o "X" para cancelar compra: ').title() !='X': 
+            print('\nSe ha realizado la compra con exito!\n')    
             compras.append(x)
             return restaurantes, compras
         else:
+            for p, cantidad in orden.items():
+                for pro in prod:
+                    if p == pro.nombre:
+                        prod.inventario += cantidad
             print('Se ha cancelado la compra')
     else:
         x = Compra(cliente.identificacion, orden, precio, 0, precio)
-        print(f"----- Compra de {cliente.nombre} -----")
+        print(f"\n\t----- Compra de {cliente.nombre} -----")
         x.mostrar()
-        if input('Presione cualquier tecla para confirmar o "X" para cancelar compra: ').title() !='X':   
+        if input('Presione cualquier tecla para confirmar o "X" para cancelar compra: ').title() !='X': 
+            print('\nSe ha realizado la compra con exito!\n')  
             compras.append(x)
             return restaurantes, compras
         else:
-            return None
+            for p, cantidad in orden.items():
+                for pro in prod:
+                    if p == pro.nombre:
+                        pro.inventario += cantidad
+            print('Se ha cancelado la compra')
    
 '''Determinar si un numero es perfecto'''
 def perfectos(num):
@@ -536,3 +559,76 @@ def perfectos(num):
         return True
     else:
         return False
+    
+'''Gestion 6: Estadisticas'''
+'''Promedio de gasto de un cliente VIP'''
+def promedio_vip(clientes, compras):
+    total = 0
+    contador = 0
+    for cliente in clientes:
+            if cliente.ticket.tipo_entrada == 'VIP':
+                total += cliente.ticket.precio
+                contador+=1
+                if compras != []:
+                    for compra in compras:
+                        if cliente.identificacion == compra.cedula:
+                            total += compra.total
+    try: 
+        promedio = total/contador
+        print(f'Un cliente VIP gasta en promedio {round(promedio,2)}$')
+    except:
+        print('No hay clientes VIP registrados en el sistema')
+
+'''Tabla de asistencia a las carreras'''     
+            
+'''Carrera con mayor asistencia'''
+def mayor_asistencia(carreras):
+    max, max_carrera = 0, ''
+    for carrera in carreras:
+        if carrera.asistencia > max:
+            max = carrera.asistencia
+            max_carrera = carrera.nombre
+    if max == 0:
+        print('\nNo se ha confirmado asistencia para ninguna carrera.')
+    else:
+        print(f'\nLa carrera con mayor asistencia es {max_carrera}, para la cual asistiran {max} personas.')
+
+'''Carrera con mayor boletos vendidos'''
+def mayor_boletos(carreras):
+    max, max_carrera = 0, ''
+    for carrera in carreras:
+        if carrera.boletos_vendidos > max:
+            max = carrera.boletos_vendidos
+            max_carrera = carrera.nombre
+    if max == 0:
+        print('\nNo se han vendidos boletos para ninguna carrera.')
+    else:
+        print(f'\nLa carrera con mayor boletos vendidos es {max_carrera}, para la cual se vendieron {max} boletos.')
+
+'''Top 3 productos mas vendidos'''
+def max_productos(productos):
+    aux = sorted(productos, key=lambda x: x.inventario)
+    if aux[0].inventario == 300:
+        print('No se ha vendido ningun producto')
+    elif aux[1].inventario == 300:
+        print(f"1. {aux[0].nombre}")
+    elif aux[2].inventario == 300:
+        print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}")
+    else:
+        print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}\n3. {aux[2].nombre}")
+
+'''Top 3 clientes'''
+def max_clientes(clientes):
+    aux = sorted(clientes, key=lambda x: x.ticket.cantidad)
+    if aux[0].ticket.cantidad == 0:
+        print('Aun no se han vendido boletos')
+    elif aux[1].ticket.cantidad == 0:
+        print(f"1. {aux[0].nombre}")
+    elif aux[2].ticket.cantidad == 0:
+        print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}")
+    else:
+        print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}\n3. {aux[2].nombre}")
+    
+
+
+'''Grafico de las estadisticas'''

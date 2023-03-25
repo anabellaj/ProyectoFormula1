@@ -15,7 +15,7 @@ def main():
     circuitos = circuito_obj(carreras_edd)
     carreras = carrera_objects(carreras_edd, circuitos)
     restaurantes, productos = restaurantes_obj(carreras_edd)
-    codigos, clientes = [], []
+    codigos, clientes, compras = [], [], []
     
     while True:
         opt = get_option()
@@ -45,22 +45,22 @@ def main():
         elif opt == 2:
             print('\nUsted ha ingresado a la gestion de venta de entradas!')
             try:
-                clientes, carreras, codigos = get_client_data(carreras, codigos)
+                clientes, carreras, codigos = get_client_data(clientes, carreras, codigos)
             except:
                 print('Compra cancelada')
-            # mapa = carreras[20].mapa
-            # print(carreras[20].nombre)
-            # imprimir_mapa(mapa)
             
         #3: Gestion de asistencia a las carreras
         elif opt == 3:
             print('\nUsted ha ingresado a la gestion de asistencia a las carreras!')
             opti = input('\nPresione 1 para validar un ticket\nPresione 2 para chequear la asistencia para una carrera\n>> ')
             while not opti.isnumeric() or int(opti) not in range(1,3):
-                opti = input('\nERROR - Ingreso Invalido\nPresione 1 para validar un ticket\nPresione 2 para chequear la asistencia para una carrera\n>> ')
+                opti = input('\nERROR - Ingreso Invalido\nPresione 1 para validar un ticket y confirmar asistencia\nPresione 2 para chequear la asistencia para una carrera\n>> ')
             if opti == '1':
                 print('\n----- VALIDACION DE TICKETS -----')
-                carreras, codigos = confirmar_asistencia(clientes, codigos, carreras)
+                try:
+                    carreras, codigos = confirmar_asistencia(clientes, codigos, carreras)
+                except:
+                    print('Lo sentimos, su ticket no es valido')
             elif opti == '2':
                 print('\n----- CHEQUEO DE ASISTENCIA -----')
                 chequear_asistencia(carreras)
@@ -93,35 +93,35 @@ def main():
                 continue
             else:
                 try:
-                    restaurantes, compras = get_compra(cliente,restaurantes)
+                    restaurantes, compras = get_compra(compras, cliente,restaurantes)
                 except:
                     print('Se ha cancelado la compra')
                     
         #6: Estadisticas
         elif opt == 6:
             print('\nUsted ha ingresado a la seccion de estadisticas!')
-            opti = ('\nPresione 1 para ver el promedio de gasto de un cliente VIP\nPresione 2 para ver la tabla de asistencia a las carreras\nPresione 3 para ver la carrera con mayor asistencia\nPresione 4 para ver la carrera con mayor boletos vendidos\nPresione 5 para ver el top 3 de productos mas vendidos\nPresione 6 para ver el top 3 de clientes\nPresione 7 para ver el grafico de las estadisticas\nPresione 8 para volver al menu inicial\n>> ')
-            while not opti.isnumeric() or opti not in range(1,9):
-                opti = ('\nERROR - Ingreso Invalido\nPresione 1 para ver el promedio de gasto de un cliente VIP\nPresione 2 para ver la tabla de asistencia a las carreras\nPresione 3 para ver la carrera con mayor asistencia\nPresione 4 para ver la carrera con mayor boletos vendidos\nPresione 5 para ver el top 3 de productos mas vendidos\nPresione 6 para ver el top 3 de clientes\nPresione 7 para ver el grafico de las estadisticas\nPresione 8 para volver al menu inicial\n>> ')
+            opti = input('\nPresione 1 para ver el promedio de gasto de un cliente VIP\nPresione 2 para ver la tabla de asistencia a las carreras\nPresione 3 para ver la carrera con mayor asistencia\nPresione 4 para ver la carrera con mayor boletos vendidos\nPresione 5 para ver el top 3 de productos mas vendidos\nPresione 6 para ver el top 3 de clientes\nPresione 7 para ver el grafico de las estadisticas\nPresione 8 para volver al menu inicial\n>> ')
+            while not opti.isnumeric() or int(opti) not in range(1,9):
+                opti = input('\nERROR - Ingreso Invalido\nPresione 1 para ver el promedio de gasto de un cliente VIP\nPresione 2 para ver la tabla de asistencia a las carreras\nPresione 3 para ver la carrera con mayor asistencia\nPresione 4 para ver la carrera con mayor boletos vendidos\nPresione 5 para ver el top 3 de productos mas vendidos\nPresione 6 para ver el top 3 de clientes\nPresione 7 para ver el grafico de las estadisticas\nPresione 8 para volver al menu inicial\n>> ')
             opti = int(opti)
             if opti ==1:
                 print('\n----- PROMEDIO DE GASTO DE UN CLIENTE VIP -----')
-                
+                promedio_vip(clientes,compras)
             elif opti == 2:
                 print('\n----- TABLA DE ASISTENCIA A LAS CARRERAS -----')
                 
             elif opti == 3:
                 print('\n----- CARRERA CON MAYOR ASISTENCIA -----')
-
+                mayor_asistencia(carreras)
             elif opti == 4:
                 print('\n----- CARRERA CON MAYOR BOLETOS VENDIDOS -----')
-            
+                mayor_boletos(carreras)
             elif opti == 5:
                 print('\n----- TOP 3 PRODUCTOS VENDIDOS -----')
-                
+                max_productos(productos)
             elif opti == 6:
                 print('\n----- TOP 3 CLIENTES -----')
-                
+                max_clientes(clientes)
             elif opti == 7:
                 print('\n----- GRAFICO DE LAS ESTADISTICAS -----')
                 
