@@ -1,4 +1,5 @@
 import random
+import bokeh
 from Piloto import Piloto
 from Constructor import Constructor
 from Bebida import Bebida
@@ -89,13 +90,13 @@ def pilotos_objetos(edd):
         x = Piloto(pilot['id'], pilot['permanentNumber'],pilot['code'],pilot['team'],pilot['firstName'],pilot['lastName'],pilot['dateOfBirth'],pilot['nationality'],puntaje)
         pilotos.append(x)
     return pilotos
-            
-"""Seleccionar opcion""" 
+           
+'''Seleccionar opcion''' 
 def get_option():
     print('\n🏎️  Bienvenido al programa de Formula 1 🏎️')
     while True:
         try:
-            opt = int(input('\nPresione 1 para ingresar a la gestion de carreras y equipos\nPresione 2 para ingresar a la gestion de venta de entradas\nPresione 3 para ingresar a la gestion de asistencia a las carreras\npresione 4 para ingresar a la gestion de restaurantes\nPresione 5 para ingresar a la gestion de venta de restaurantes\nPresione 6 para visualizar las estadisticas\nPresione 7 para salir\n\nIndique el numero correspondiente a su eleccion: '))
+            opt = int(input('\nPresione 1 para ingresar a la gestion de carreras y equipos\nPresione 2 para ingresar a la gestion de venta de entradas\nPresione 3 para ingresar a la gestion de asistencia a las carreras\nPresione 4 para ingresar a la gestion de restaurantes\nPresione 5 para ingresar a la gestion de venta de restaurantes\nPresione 6 para visualizar las estadisticas\nPresione 7 para salir\n\nIndique el numero correspondiente a su eleccion: '))
             if opt not in range (1,8):
                 raise Exception
             break
@@ -103,36 +104,7 @@ def get_option():
             print('\nERROR - Por favor ingrese una opcion valida')
     return opt
 
-'''Gestion 1: Carreras y equipos'''
-'''Funcion para obtener el podio de una carrera'''
-def get_podio(pilotos, carreras, constructores):
-    puntaje = {1:25,2:18,3:15,4:12,5:10,6:8,7:6,8:4,9:2,10:1}
-    print('\nCarreras sin finalizar:')
-    n_invalidos = []
-    for i,carrera in enumerate(carreras):
-        if carrera.podio == False:
-            print('\t',i+1,carrera.nombre)
-        else:
-            n_invalidos.append(i+1)
-    choice = input('\nIngrese el numero correspondiente a la carrera a finalizar:\n>> ')
-    while not choice.isnumeric() or int(choice) not in range (1,len(carreras)+1) or int(choice) in n_invalidos:
-        choice = input('\nERROR - Opcion invalida\nPor favor ingrese el numero correspondiente a la carrera a finalizar:\n>> ')
-    podio = random.sample(pilotos, 10)       
-    contador = 1
-    for piloto in podio:
-        piloto.score += puntaje[contador]
-        contador += 1
-    for constructor in constructores:
-        for pilot in constructor.pilotos:
-            if pilot in podio:
-                constructor.score += pilot.score
-    carreras[int(choice)-1].podio = podio
-    print(f"\nPodio final para la carrera {carreras[int(choice)-1].nombre}")
-    for i, piloto in enumerate(podio):
-        print(f"\t{i+1}. {piloto.firstName} {piloto.lastName}\tPuntaje: {puntaje[i+1]}")
-    
-    return pilotos, constructores, carreras
-    
+'''Gestion 1: Carreras y equipos'''    
 '''Busqueda de constructores por paises'''
 def filter_paises(constructores):
     print('\nPaises disponibles:')
@@ -145,7 +117,7 @@ def filter_paises(constructores):
     print(f"\nConstructores de {pais}")
     for constructor in constructores:
         if constructor.nacionalidad == paises[pais]:
-            print('\n\t🏁',constructor.nombre, '\nPuntaje: ',constructor.score)
+            print('\n\t🏁',constructor.nombre, '\n\tPuntaje: ',constructor.score)
 
 '''Ver pilotos de cada constructor'''
 def filter_pilots(constructores):
@@ -199,6 +171,52 @@ def filter_months(carreras):
     if contador == 0:
         print(f"\nNo hay carreras durante el mes de {mes}")
 
+'''Funcion para obtener el podio de una carrera'''
+def get_podio(pilotos, carreras, constructores):
+    puntaje = {1:25,2:18,3:15,4:12,5:10,6:8,7:6,8:4,9:2,10:1}
+    print('\nCarreras sin finalizar:')
+    n_invalidos = []
+    for i,carrera in enumerate(carreras):
+        if carrera.podio == False:
+            print('\t',i+1,carrera.nombre)
+        else:
+            n_invalidos.append(i+1)
+    if len(n_invalidos) != len(carreras):
+        choice = input('\nIngrese el numero correspondiente a la carrera a finalizar:\n>> ')
+        while not choice.isnumeric() or int(choice) not in range (1,len(carreras)+1) or int(choice) in n_invalidos:
+            choice = input('\nERROR - Opcion invalida\nPor favor ingrese el numero correspondiente a la carrera a finalizar:\n>> ')
+        podio = random.sample(pilotos, 10)       
+        contador = 1
+        for piloto in podio:
+            piloto.score += puntaje[contador]
+            contador += 1
+        for constructor in constructores:
+            for pilot in constructor.pilotos:
+                if pilot in podio:
+                    constructor.score += pilot.score
+        carreras[int(choice)-1].podio = podio
+        print(f"\nPodio final para la carrera {carreras[int(choice)-1].nombre}")
+        l=[]
+        for i, piloto in enumerate(podio):
+            pi = piloto.firstName +' '+ piloto.lastName
+            sc= puntaje[i+1]
+            d= [i+1 ,pi, sc]
+            l.append(d)
+        print(tabulate(l,headers=['Posicion','Piloto','Puntaje']))
+        return pilotos, constructores, carreras
+    else:
+        print('\nYa se han finalizado todas las carreras!')        
+        return pilotos, constructores, carreras
+
+'''Ver campeon mundial para el momento'''
+def ganadores(pilotos, constructores):
+    aux_pilotos = sorted(pilotos, key=lambda x: x.score, reverse=True)
+    aux_constructores = sorted(constructores, key=lambda x: x.score,reverse=True)
+    if aux_pilotos[0].score == 0:
+        print('\nAun no se ha finalizado ninguna carrera!')
+    else:
+        print(f'Campeon mundial:\n\tPiloto: {aux_pilotos[0].firstName} {aux_pilotos[0].lastName} con {aux_pilotos[0].score} puntos\n\tConstructor: {aux_constructores[0].nombre} con {aux_constructores[0].score} puntos')
+
 '''Gestion 2: Venta de entradas'''
 '''Obtener los datos del cliente y comprar entradas'''
 def get_client_data(clientes,carreras, codigos):
@@ -230,12 +248,13 @@ def get_client_data(clientes,carreras, codigos):
     else: 
         tipo_entrada ='General'
     c = carreras[circuito]
+    mapa_aux = c.mapa
     disponibles = 100-c.boletos_vendidos
     cantidad = input(f"Cuantas entradas de tipo {tipo_entrada} desea? Solo hay {disponibles} entradas disponibles: ")
     while not cantidad.isnumeric() or int(cantidad) not in range(1,disponibles+1):
         cantidad = input(f"\nERROR - Ingreso Invalido\nCuantas entradas de tipo {tipo_entrada} desea? Recuerde que solo hay {disponibles} entrads disponibles: ")
     cantidad = int(cantidad)
-    asientos = get_asientos(cantidad, c) 
+    asientos = get_asientos(cantidad, mapa_aux) 
     subtotal = entradas[tipo_entrada] * cantidad
     descuento, disc = 0, False
     if num_ondulado(int(identificacion)) == True:
@@ -258,6 +277,7 @@ def get_client_data(clientes,carreras, codigos):
         #                 carrera.mapa[int(fila)-1][int(columna)-1]= False
         print('\nSus tickets se han comprado con exito!')
         c.boletos_vendidos += y.cantidad
+        c.mapa = mapa_aux
         return clientes, carreras, codigos
     else:
         for asiento in asientos:
@@ -297,10 +317,11 @@ def imprimir_mapa(mapa):
         print("   "+"-"*len(mapa[1]*4))
         print(auxiliar)
         
-def get_asientos(cantidad,carrera):
+def get_asientos(cantidad,mapa_aux):
+    # r = carrera
     asientos = []
     contador =1
-    imprimir_mapa(carrera.mapa)
+    imprimir_mapa(mapa_aux)
     while cantidad >= contador:
         while True:
             try: 
@@ -314,16 +335,16 @@ def get_asientos(cantidad,carrera):
                 asiento.update({fila: columna})
                 if asiento in asientos:
                     raise Exception
-                if carrera.mapa[int(fila)-1][int(columna)-1]:
+                if mapa_aux[int(fila)-1][int(columna)-1]:
                     raise Exception
                 break
             except:
                 print(f"\nEl asiento {fila} {columna} ya esta ocupado. Por favor elija otro asiento.")
         asientos.append(asiento)
-        carrera.mapa[int(fila)-1][int(columna)-1]=True
+        mapa_aux[int(fila)-1][int(columna)-1]=True
         contador += 1
     print('Sus asientos seleccionados se representan con una "X"')
-    imprimir_mapa(carrera.mapa)
+    imprimir_mapa(mapa_aux)
     return asientos
     
 '''Funcion para determinar si un numero es ondulado'''
@@ -430,16 +451,21 @@ def products_type(restaurantes,cliente):
             for p in (r.productos):
                 prod.append(p)
                 go = True
+    if choice == '1':
+        print('\n\nBEBIDAS DISPONIBLES EN',(cliente.carrera).upper())
+    elif choice == '2':
+        print('\n\nCOMIDA DISPONIBLE EN',(cliente.carrera).upper())
+
     if go:
         for p in prod:
             if choice == '1':
-                print('Bebidas disponibles en',cliente.carrera)
                 if isinstance(p, Bebida):
                     p.mostrar()
+                    print('*****************************')
             elif choice == '2':
-                print('Comida disponible en',cliente.carrera)
                 if isinstance(p, Comida):
                     p.mostrar()
+                    print('*****************************')
     else:
         print(f"\nLo sentimos, no hay productos en el {cliente.carrera}")
     
@@ -580,7 +606,19 @@ def promedio_vip(clientes, compras):
         print('No hay clientes VIP registrados en el sistema')
 
 '''Tabla de asistencia a las carreras'''     
-            
+from tabulate import tabulate
+def tabla_asistencia(carreras):
+    aux = sorted(carreras, key=lambda x: x.asistencia, reverse=True)
+    l=[]
+    for i, carrera in enumerate(aux):
+        try:
+            relacion = carrera.asistencia / carrera.boletos_vendidos
+        except:
+            relacion = 0
+        d=[i+1,carrera.nombre,carrera.circuito.name,carrera.asistencia, carrera.boletos_vendidos, relacion]
+        l.append(d)
+    print(tabulate(l ,headers=['Posicion','Nombre','Estadio','Asistencia','Boletos','Relacion asistencia/boletos']))
+
 '''Carrera con mayor asistencia'''
 def mayor_asistencia(carreras):
     max, max_carrera = 0, ''
@@ -592,6 +630,21 @@ def mayor_asistencia(carreras):
         print('\nNo se ha confirmado asistencia para ninguna carrera.')
     else:
         print(f'\nLa carrera con mayor asistencia es {max_carrera}, para la cual asistiran {max} personas.')
+        aux = sorted(carreras, key=lambda x:x.asistencia, reverse=True)
+        l = []
+        ind =[]
+        contador = 0
+        for prod in aux:
+            if contador < 5:
+                ind.append(prod.nombre)
+                l.append(prod.asistencia)
+                contador+=1
+            else:
+                break
+        data = pd.DataFrame(l,index=ind)
+        total = data.sum(axis=1)
+        plt.bar(total.index, total)
+        plt.show()
 
 '''Carrera con mayor boletos vendidos'''
 def mayor_boletos(carreras):
@@ -604,9 +657,28 @@ def mayor_boletos(carreras):
         print('\nNo se han vendidos boletos para ninguna carrera.')
     else:
         print(f'\nLa carrera con mayor boletos vendidos es {max_carrera}, para la cual se vendieron {max} boletos.')
+        aux = sorted(carreras, key=lambda x:x.boletos_vendidos, reverse=True)
+        l = []
+        ind =[]
+        contador = 0
+        for prod in aux:
+            if contador < 5:
+                ind.append(prod.nombre)
+                l.append(prod.boletos_vendidos)
+                contador+=1
+            else:
+                break
+        data = pd.DataFrame(l,index=ind)
+        total = data.sum(axis=1)
+        plt.bar(total.index, total)
+        plt.show()
 
 '''Top 3 productos mas vendidos'''
-def max_productos(productos):
+def max_productos(restaurantes):
+    productos = []
+    for restaurante in restaurantes:
+        for p in restaurante.productos:
+            productos.append(p)
     aux = sorted(productos, key=lambda x: x.inventario)
     if aux[0].inventario == 300:
         print('No se ha vendido ningun producto')
@@ -616,19 +688,44 @@ def max_productos(productos):
         print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}")
     else:
         print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}\n3. {aux[2].nombre}")
+    l = []
+    ind =[]
+    contador = 0
+    for prod in aux:
+        if contador < 5:
+            ind.append(prod.nombre)
+            l.append(300 - prod.inventario)
+            contador+=1
+        else:
+            break
+        
+    if aux[0].inventario != 300:
+        data = pd.DataFrame(l,index=ind)
+        total = data.sum(axis=1)
+        plt.bar(total.index, total)
+        plt.show()
 
 '''Top 3 clientes'''
+import matplotlib.pyplot as plt
+import pandas as pd
 def max_clientes(clientes):
-    aux = sorted(clientes, key=lambda x: x.ticket.cantidad)
-    if aux[0].ticket.cantidad == 0:
+    aux = sorted(clientes, key=lambda x: x.ticket.cantidad,reverse=True)
+    if len(aux) == 0:
         print('Aun no se han vendido boletos')
-    elif aux[1].ticket.cantidad == 0:
+    elif len(aux) == 1:
         print(f"1. {aux[0].nombre}")
-    elif aux[2].ticket.cantidad == 0:
+    elif len(aux) == 2:
         print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}")
     else:
         print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}\n3. {aux[2].nombre}")
+    l = []
+    ind =[]
+    for client in aux:
+        ind.append(client.nombre)
+        l.append(client.ticket.cantidad)
+    if len(aux) != 0:
+        data = pd.DataFrame(l,index=ind)
+        total = data.sum(axis=1)
+        plt.bar(total.index, total)
+        plt.show()
     
-
-
-'''Grafico de las estadisticas'''
