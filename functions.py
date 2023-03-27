@@ -1,5 +1,7 @@
 import random
 import bokeh
+import matplotlib.pyplot as plt
+import pandas as pd
 from Piloto import Piloto
 from Constructor import Constructor
 from Bebida import Bebida
@@ -17,8 +19,8 @@ from Compra import Compra
 def carrera_objects(edd, circuitos):
     carreras = []
     contador = 0
-    mapa = crear_mapa()
     for carrera in edd:
+        mapa = crear_mapa()
         circ = circuitos[contador]
         rest = []
         for res in carrera['restaurants']:
@@ -515,7 +517,7 @@ def get_compra(compras, cliente, restaurantes):
         if go:
             choice = input('\nIngrese el numero correspondiente al producto que desee comprar: ')
             while not choice.isnumeric() or int(choice) not in range(1,len(prod)+1):
-                choice = input(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
+                choice = input(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)} productos disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
             choice = int(choice) -1
             while True:
                 if not isinstance(prod[choice], Bebida):
@@ -524,7 +526,7 @@ def get_compra(compras, cliente, restaurantes):
                     if prod[choice].alcoholico and int(cliente.edad) < 18:
                         choice = input('Recuerde que los menores de edad no pueden comprar bebidas alcoholicas!\nPor favor seleccione otro producto: ')
                         while not choice.isnumeric() or int(choice) not in range(1,len(prod)+1):
-                            choice = input(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)+1} disponibles\nIngrese el numero correspondiente al producto elegido a continuacion: ")
+                            choice = input(f"\nERROR - Opcion Invalida\nRecuerde que en {cliente.carrera} solo hay {len(prod)} productos disponibles y que debe colocar un numero entero\nIngrese el numero correspondiente al producto elegido a continuacion: ")
                         choice = int(choice) -1    
                         continue
                     else:
@@ -545,6 +547,7 @@ def get_compra(compras, cliente, restaurantes):
                 continue
         else:
             print(f"Lo sentimos, no hay productos disponibles en el {cliente.carrera}")
+            return 
     if perfectos(cliente.identificacion) ==  True:
         x = Compra(cliente.identificacion, orden, precio, precio*0.15, (precio-(precio*0.15)))
         print(f"\n\n\t----- COMPRA DE {cliente.nombre.upper()} -----")
@@ -706,18 +709,16 @@ def max_productos(restaurantes):
         plt.show()
 
 '''Top 3 clientes'''
-import matplotlib.pyplot as plt
-import pandas as pd
 def max_clientes(clientes):
     aux = sorted(clientes, key=lambda x: x.ticket.cantidad,reverse=True)
     if len(aux) == 0:
         print('Aun no se han vendido boletos')
     elif len(aux) == 1:
-        print(f"1. {aux[0].nombre}")
+        print(f"1. {aux[0].nombre.title()}")
     elif len(aux) == 2:
-        print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}")
+        print(f"1. {aux[0].nombre.title()}\n2. {aux[1].nombre.title()}")
     else:
-        print(f"1. {aux[0].nombre}\n2. {aux[1].nombre}\n3. {aux[2].nombre}")
+        print(f"1. {aux[0].nombre.title()}\n2. {aux[1].nombre.title()}\n3. {aux[2].nombre.title()}")
     l = []
     ind =[]
     for client in aux:
