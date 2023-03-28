@@ -722,7 +722,7 @@ def max_clientes(clientes):
     l = []
     ind =[]
     for client in aux:
-        ind.append(client.nombre)
+        ind.append(client.nombre.title())
         l.append(client.ticket.cantidad)
     if len(aux) != 0:
         data = pd.DataFrame(l,index=ind)
